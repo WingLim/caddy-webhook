@@ -1,6 +1,7 @@
 package caddy_webhook
 
 import (
+	"fmt"
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"go.uber.org/zap"
@@ -15,7 +16,7 @@ var (
 )
 
 type HookService interface {
-	Handle(*http.Request, *WebHook) (int, error)
+	Handle(*http.Request, *HookConf) (int, error)
 }
 
 type WebHook struct {
@@ -26,7 +27,12 @@ type WebHook struct {
 	Secret     string `json:"secret,omitempty"`
 	Depth      string `json:"depth,omitempty"`
 
-	log *zap.Logger
+	Hook HookService
+	log  *zap.Logger
+}
+
+type HookConf struct {
+	Secret string
 }
 
 func (*WebHook) CaddyModule() caddy.ModuleInfo {
@@ -47,6 +53,22 @@ func (w *WebHook) Validate() error {
 	return nil
 }
 
-func (w *WebHook) ServeHTTP(writer http.ResponseWriter, req *http.Request, next caddyhttp.Handler) error {
+func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
+	hc := HookConf{Secret: w.Secret}
+
+	code, err := w.Hook.Handle(r, &hc)
+	if err != nil {
+		rw.WriteHeader(code)
+		return caddyhttp.Error(code, err)
+	}
+
+	return next.ServeHTTP(rw, r)
+}
+
+func ValidateRequest(r *http.Request) error {
+	if r.Method != http.MethodPost {
+		return fmt.Errorf("only %s method accepted; got %s", http.MethodPost, r.Method)
+	}
+
 	return nil
 }
