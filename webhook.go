@@ -22,6 +22,11 @@ var (
 	_ caddyhttp.MiddlewareHandler = (*WebHook)(nil)
 )
 
+func init() {
+	caddy.RegisterModule(&WebHook{})
+	httpcaddyfile.RegisterHandlerDirective("webhook", parseHandlerCaddyfile)
+}
+
 type HookService interface {
 	Handle(*http.Request, *HookConf) (int, error)
 }
