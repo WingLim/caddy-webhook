@@ -22,7 +22,7 @@ type Repo struct {
 
 func (r *Repo) Setup(ctx context.Context, log *zap.Logger) error {
 	var err error
-	log.Info("setting up repository", zap.String("paht", r.Path))
+	log.Info("setting up repository", zap.String("path", r.Path))
 
 	r.repo, err = git.PlainOpen(r.Path)
 	if err == nil {
