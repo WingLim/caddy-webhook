@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/go-git/go-git/v5"
 	"go.uber.org/zap"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -117,7 +119,7 @@ func (w *WebHook) Validate() error {
 	if w.Path == "" {
 		return fmt.Errorf("cannot create repository in empty path")
 	}
-	if err := isEmptyOrGit(w.Path); err != nil {
+	if !isEmptyOrGit(w.Path) {
 		return fmt.Errorf("given path is neither empty nor git repository")
 	}
 
@@ -186,18 +188,32 @@ func getRepoNameFromURL(u string) (string, error) {
 	return strings.TrimSuffix(name, ".git"), nil
 }
 
-func isEmptyOrGit(root string) error {
-	info, err := os.Stat(root)
-	if err != nil && err != os.ErrNotExist {
-		return err
+func isEmptyOrGit(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return true
+		}
+		return false
 	}
-	if info != nil && !info.IsDir() {
-		return fmt.Errorf("path is not a dir")
+	if info.IsDir() {
+		f, err := os.Open(filepath.Clean(path))
+		if err != nil {
+			return false
+		}
+		defer f.Close()
+
+		_, err = f.Readdirnames(1)
+		if err == io.EOF {
+			return true
+		}
 	}
 
-	_, err = git.PlainOpen(root)
+	_, err = git.PlainOpen(path)
 	if err != nil {
-		return err
+		if err == git.ErrRepositoryNotExists {
+			return false
+		}
 	}
-	return nil
+	return true
 }
