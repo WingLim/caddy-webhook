@@ -131,6 +131,13 @@ func (w *WebHook) Validate() error {
 }
 
 func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
+	if !w.setup {
+		return caddyhttp.Error(
+			http.StatusNotFound,
+			fmt.Errorf("page not found"),
+		)
+	}
+
 	hc := HookConf{Secret: w.Secret}
 
 	code, err := w.Hook.Handle(r, &hc)
@@ -138,6 +145,19 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 		rw.WriteHeader(code)
 		return caddyhttp.Error(code, err)
 	}
+
+	go func(webhook *WebHook) {
+		webhook.log.Info("updating repository", zap.String("path", webhook.Path))
+
+		if err := webhook.repo.Update(webhook.ctx); err != nil {
+			webhook.log.Error(
+				"cannot update repository",
+				zap.Error(err),
+				zap.String("path", webhook.Path),
+			)
+			return
+		}
+	}(w)
 
 	return next.ServeHTTP(rw, r)
 }
