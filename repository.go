@@ -25,6 +25,8 @@ type Repo struct {
 	Submodule bool
 
 	repo    *git.Repository
+	log     *zap.Logger
+	cmd     *Cmd
 	refName plumbing.ReferenceName
 }
 
@@ -37,15 +39,17 @@ func NewRepo(w *WebHook) *Repo {
 		Depth:     w.depth,
 		Secret:    w.Secret,
 		Submodule: w.Submodule,
+		cmd:       w.cmd,
+		log:       w.log,
 	}
 
 	return r
 }
 
 // Setup initializes the git repository by either cloning or opening it.
-func (r *Repo) Setup(ctx context.Context, log *zap.Logger) error {
+func (r *Repo) Setup(ctx context.Context) error {
 	var err error
-	log.Info("setting up repository", zap.String("path", r.Path))
+	r.log.Info("setting up repository", zap.String("path", r.Path))
 
 	err = r.setRef(ctx)
 	if err != nil {
@@ -93,6 +97,8 @@ func (r *Repo) Setup(ctx context.Context, log *zap.Logger) error {
 		return err
 	}
 
+	r.log.Info("setting up repository successful")
+	go r.cmd.Run(r.log)
 	return nil
 }
 
@@ -102,6 +108,7 @@ func (r *Repo) Update(ctx context.Context) error {
 		return r.pull(ctx)
 	}
 
+	go r.cmd.Run(r.log)
 	return git.NoErrAlreadyUpToDate
 }
 

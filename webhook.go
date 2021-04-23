@@ -33,15 +33,17 @@ func init() {
 
 // WebHook is the module configuration.
 type WebHook struct {
-	Repository string `json:"repo,omitempty"`
-	Path       string `json:"path,omitempty"`
-	Branch     string `json:"branch,omitempty"`
-	Type       string `json:"type,omitempty"`
-	Secret     string `json:"secret,omitempty"`
-	Depth      string `json:"depth,omitempty"`
-	Submodule  bool   `json:"submodule,omitempty"`
+	Repository string   `json:"repo,omitempty"`
+	Path       string   `json:"path,omitempty"`
+	Branch     string   `json:"branch,omitempty"`
+	Type       string   `json:"type,omitempty"`
+	Secret     string   `json:"secret,omitempty"`
+	Depth      string   `json:"depth,omitempty"`
+	Submodule  bool     `json:"submodule,omitempty"`
+	Command    []string `json:"command,omitempty"`
 
 	hook  webhooks.HookService
+	cmd   *Cmd
 	depth int
 	repo  *Repo
 	log   *zap.Logger
@@ -97,8 +99,12 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 	}
 	w.depth = depth
 
-	w.repo = NewRepo(w)
+	if w.Command != nil {
+		w.cmd = &Cmd{}
+		w.cmd.AddCommand(w.Command, w.Path)
+	}
 
+	w.repo = NewRepo(w)
 	return nil
 }
 
@@ -126,7 +132,7 @@ func (w *WebHook) Validate() error {
 	}
 
 	go func(webhook *WebHook) {
-		if err := webhook.repo.Setup(webhook.ctx, webhook.log); err != nil {
+		if err := webhook.repo.Setup(webhook.ctx); err != nil {
 			webhook.log.Error(
 				"repository not setup",
 				zap.Error(err),

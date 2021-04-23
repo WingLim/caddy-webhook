@@ -25,6 +25,8 @@ func parseHandlerCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler,
 //			depth		<int>
 //			type 		<text>
 //			secret		<text>
+//			command		<test>...
+//			submodule
 //		}
 func (w *WebHook) UnmarshlCaddyfile(d *caddyfile.Dispenser) error {
 	if d.NextArg() && d.NextArg() {
@@ -69,6 +71,8 @@ func (w *WebHook) UnmarshlCaddyfile(d *caddyfile.Dispenser) error {
 			}
 		case "submodule":
 			w.Submodule = true
+		case "command":
+			w.Command = d.RemainingArgs()
 		}
 	}
 
