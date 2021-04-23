@@ -64,12 +64,8 @@ func (r *Repo) Setup(ctx context.Context, log *zap.Logger) error {
 			return err
 		}
 
-		err = r.repo.FetchContext(ctx, &git.FetchOptions{
-			RemoteName: DefaultRemote,
-			Depth:      r.Depth,
-			Tags:       git.AllTags,
-		})
-		if err != nil && err != git.NoErrAlreadyUpToDate {
+		err = r.fetch(ctx)
+		if err != nil {
 			return err
 		}
 
@@ -104,6 +100,17 @@ func (r *Repo) Update(ctx context.Context) error {
 	}
 
 	return git.NoErrAlreadyUpToDate
+}
+
+func (r *Repo) fetch(ctx context.Context) error {
+	if err := r.repo.FetchContext(ctx, &git.FetchOptions{
+		RemoteName: DefaultRemote,
+		Depth:      r.Depth,
+		Tags:       git.AllTags,
+	}); err != nil && err != git.NoErrAlreadyUpToDate {
+		return err
+	}
+	return nil
 }
 
 func (r *Repo) pull(ctx context.Context) error {
