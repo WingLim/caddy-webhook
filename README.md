@@ -1,5 +1,8 @@
 # caddy-webhook
-Caddy v2 module for server a webhook.
+Caddy v2 module for serving a webhook.
+
+[![Build](https://github.com/WingLim/caddy-webhook/actions/workflows/build.yml/badge.svg)](https://github.com/WingLim/caddy-webhook/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Installation
 ```shell
