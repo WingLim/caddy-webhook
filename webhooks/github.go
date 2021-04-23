@@ -1,4 +1,4 @@
-package caddy_webhook
+package webhooks
 
 import (
 	"crypto/hmac"
@@ -25,9 +25,9 @@ type ghRelease struct {
 	} `json:"release"`
 }
 
-func (g Github) Handle(r *http.Request, repo *Repo) (int, error) {
+func (g Github) Handle(r *http.Request, hc *HookConf) (int, error) {
 	body, err := ioutil.ReadAll(r.Body)
-	err = g.handleSignature(r, body, repo.Secret)
+	err = g.handleSignature(r, body, hc.Secret)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -40,12 +40,12 @@ func (g Github) Handle(r *http.Request, repo *Repo) (int, error) {
 	switch event {
 	case "ping":
 	case "push":
-		err = g.handlePush(body, repo)
+		err = g.handlePush(body, hc)
 		if err != nil {
 			return http.StatusBadRequest, err
 		}
 	case "release":
-		err = g.handleRelease(body, repo)
+		err = g.handleRelease(body, hc)
 		if err != nil {
 			return http.StatusBadRequest, err
 		}
@@ -75,7 +75,7 @@ func (g Github) handleSignature(r *http.Request, body []byte, secret string) err
 	return nil
 }
 
-func (g Github) handlePush(body []byte, repo *Repo) error {
+func (g Github) handlePush(body []byte, repo *HookConf) error {
 	var push ghPush
 
 	err := json.Unmarshal(body, &push)
@@ -85,14 +85,14 @@ func (g Github) handlePush(body []byte, repo *Repo) error {
 
 	refName := plumbing.ReferenceName(push.Ref)
 	if refName.IsBranch() {
-		if refName != repo.refName {
+		if refName != repo.RefName {
 			return fmt.Errorf("event: push to branch %s", refName)
 		}
 	}
 	return nil
 }
 
-func (g Github) handleRelease(body []byte, repo *Repo) error {
+func (g Github) handleRelease(body []byte, repo *HookConf) error {
 	var release ghRelease
 
 	err := json.Unmarshal(body, &release)

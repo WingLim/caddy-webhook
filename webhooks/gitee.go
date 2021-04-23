@@ -1,4 +1,4 @@
-package caddy_webhook
+package webhooks
 
 import (
 	"encoding/json"
@@ -15,14 +15,14 @@ type giteePush struct {
 	Ref string `json:"ref"`
 }
 
-func (g Gitee) Handle(r *http.Request, repo *Repo) (int, error) {
+func (g Gitee) Handle(r *http.Request, hc *HookConf) (int, error) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
 
-	err = g.handleToken(r, repo.Secret)
+	err = g.handleToken(r, hc.Secret)
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
@@ -34,7 +34,7 @@ func (g Gitee) Handle(r *http.Request, repo *Repo) (int, error) {
 
 	switch event {
 	case "Push hook":
-		err = g.handlePush(body, repo)
+		err = g.handlePush(body, hc)
 		if err != nil {
 			return http.StatusBadRequest, err
 		}
@@ -60,7 +60,7 @@ func (g Gitee) handleToken(r *http.Request, secret string) error {
 	return nil
 }
 
-func (g Gitee) handlePush(body []byte, repo *Repo) error {
+func (g Gitee) handlePush(body []byte, repo *HookConf) error {
 	var push giteePush
 
 	err := json.Unmarshal(body, &push)
@@ -70,7 +70,7 @@ func (g Gitee) handlePush(body []byte, repo *Repo) error {
 
 	refName := plumbing.ReferenceName(push.Ref)
 	if refName.IsBranch() {
-		if refName != repo.refName {
+		if refName != repo.RefName {
 			return fmt.Errorf("event: push to branch %s", refName)
 		}
 	}

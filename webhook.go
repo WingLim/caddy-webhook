@@ -3,6 +3,7 @@ package caddy_webhook
 import (
 	"context"
 	"fmt"
+	"github.com/WingLim/caddy-webhook/webhooks"
 	"github.com/caddyserver/caddy/v2"
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
@@ -29,10 +30,6 @@ func init() {
 	httpcaddyfile.RegisterHandlerDirective("webhook", parseHandlerCaddyfile)
 }
 
-type HookService interface {
-	Handle(*http.Request, *Repo) (int, error)
-}
-
 type WebHook struct {
 	Repository string `json:"repo,omitempty"`
 	Path       string `json:"path,omitempty"`
@@ -42,7 +39,7 @@ type WebHook struct {
 	Depth      string `json:"depth,omitempty"`
 	Submodule  bool   `json:"submodule,omitempty"`
 
-	hook  HookService
+	hook  webhooks.HookService
 	depth int
 	repo  *Repo
 	log   *zap.Logger
@@ -90,6 +87,7 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 	w.depth = depth
 
 	w.repo = NewRepo(w)
+
 	return nil
 }
 
@@ -141,7 +139,12 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 		return err
 	}
 
-	code, err := w.hook.Handle(r, w.repo)
+	hc := &webhooks.HookConf{
+		Secret:  w.Secret,
+		RefName: w.repo.refName,
+	}
+
+	code, err := w.hook.Handle(r, hc)
 	if err != nil {
 		rw.WriteHeader(code)
 		w.log.Error(err.Error())
@@ -167,7 +170,7 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 func (w *WebHook) setHookType() {
 	switch w.Type {
 	default:
-		w.hook = Github{}
+		w.hook = webhooks.Github{}
 	}
 }
 

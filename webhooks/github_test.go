@@ -1,4 +1,4 @@
-package caddy_webhook
+package webhooks
 
 import (
 	"bytes"
@@ -8,10 +8,9 @@ import (
 )
 
 func TestGithubHandle(t *testing.T) {
-	repo := &Repo{
-		Branch:  "main",
+	repo := &HookConf{
 		Secret:  "supersecret",
-		refName: plumbing.ReferenceName("refs/heads/main"),
+		RefName: plumbing.ReferenceName("refs/heads/main"),
 	}
 	ghHook := Github{}
 
