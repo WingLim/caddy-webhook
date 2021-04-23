@@ -30,7 +30,7 @@ func init() {
 }
 
 type HookService interface {
-	Handle(*http.Request, *HookConf) (int, error)
+	Handle(*http.Request, *Repo) (int, error)
 }
 
 type WebHook struct {
@@ -42,6 +42,7 @@ type WebHook struct {
 	Depth      string `json:"depth,omitempty"`
 
 	Hook  HookService
+	depth int
 	repo  *Repo
 	log   *zap.Logger
 	ctx   context.Context
@@ -49,7 +50,8 @@ type WebHook struct {
 }
 
 type HookConf struct {
-	Secret string
+	Secret   string
+	RepoInfo *Repo
 }
 
 func (*WebHook) CaddyModule() caddy.ModuleInfo {
@@ -91,13 +93,9 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 	} else {
 		depth = 0
 	}
+	w.depth = depth
 
-	w.repo = &Repo{
-		URL:    w.Repository,
-		Path:   w.Path,
-		Branch: w.Branch,
-		Depth:  depth,
-	}
+	w.repo = NewRepo(w)
 	return nil
 }
 
@@ -145,9 +143,7 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 		)
 	}
 
-	hc := HookConf{Secret: w.Secret}
-
-	code, err := w.Hook.Handle(r, &hc)
+	code, err := w.Hook.Handle(r, w.repo)
 	if err != nil {
 		rw.WriteHeader(code)
 		w.log.Error(err.Error())
