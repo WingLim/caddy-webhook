@@ -41,7 +41,7 @@ type WebHook struct {
 	Secret     string `json:"secret,omitempty"`
 	Depth      string `json:"depth,omitempty"`
 
-	Hook  HookService
+	hook  HookService
 	depth int
 	repo  *Repo
 	log   *zap.Logger
@@ -140,7 +140,7 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 		return err
 	}
 
-	code, err := w.Hook.Handle(r, w.repo)
+	code, err := w.hook.Handle(r, w.repo)
 	if err != nil {
 		rw.WriteHeader(code)
 		w.log.Error(err.Error())
@@ -166,7 +166,7 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 func (w *WebHook) setHookType() {
 	switch w.Type {
 	default:
-		w.Hook = Github{}
+		w.hook = Github{}
 	}
 }
 
