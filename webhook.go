@@ -75,9 +75,7 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 		return err
 	}
 
-	if w.Type == "" {
-		w.Hook = Github{}
-	}
+	w.setHookType()
 
 	var depth int
 	if w.Depth != "" {
@@ -159,6 +157,13 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 	}(w)
 
 	return next.ServeHTTP(rw, r)
+}
+
+func (w *WebHook) setHookType() {
+	switch w.Type {
+	default:
+		w.Hook = Github{}
+	}
 }
 
 func ValidateRequest(r *http.Request) error {
