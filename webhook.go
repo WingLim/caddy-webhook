@@ -40,6 +40,7 @@ type WebHook struct {
 	Type       string `json:"type,omitempty"`
 	Secret     string `json:"secret,omitempty"`
 	Depth      string `json:"depth,omitempty"`
+	Submodule  bool   `json:"submodule,omitempty"`
 
 	hook  HookService
 	depth int

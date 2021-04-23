@@ -67,6 +67,8 @@ func (w *WebHook) UnmarshlCaddyfile(d *caddyfile.Dispenser) error {
 			if !d.Args(&w.Secret) {
 				return d.ArgErr()
 			}
+		case "submodule":
+			w.Submodule = true
 		}
 	}
 

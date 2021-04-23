@@ -16,11 +16,12 @@ const (
 )
 
 type Repo struct {
-	URL    string
-	Path   string
-	Branch string
-	Depth  int
-	Secret string
+	URL       string
+	Path      string
+	Branch    string
+	Depth     int
+	Secret    string
+	Submodule bool
 
 	repo    *git.Repository
 	refName plumbing.ReferenceName
@@ -28,11 +29,12 @@ type Repo struct {
 
 func NewRepo(w *WebHook) *Repo {
 	r := &Repo{
-		URL:    w.Repository,
-		Path:   w.Path,
-		Branch: w.Branch,
-		Depth:  w.depth,
-		Secret: w.Secret,
+		URL:       w.Repository,
+		Path:      w.Path,
+		Branch:    w.Branch,
+		Depth:     w.depth,
+		Secret:    w.Secret,
+		Submodule: w.Submodule,
 	}
 
 	return r
@@ -72,12 +74,18 @@ func (r *Repo) Setup(ctx context.Context, log *zap.Logger) error {
 		}
 
 	} else if err == git.ErrRepositoryNotExists {
+		var submodule git.SubmoduleRescursivity
+		if r.Submodule {
+			submodule = git.DefaultSubmoduleRecursionDepth
+		} else {
+			submodule = git.NoRecurseSubmodules
+		}
 		r.repo, err = git.PlainCloneContext(ctx, r.Path, false, &git.CloneOptions{
 			URL:               r.URL,
 			RemoteName:        DefaultRemote,
 			ReferenceName:     r.refName,
 			Depth:             r.Depth,
-			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+			RecurseSubmodules: submodule,
 			Tags:              git.AllTags,
 		})
 		if err != nil {
