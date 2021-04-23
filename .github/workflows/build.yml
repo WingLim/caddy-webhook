@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install xcaddy
-        run: go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+        run: go get -v github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 
       - name: Build with xcaddy
         run: xcaddy build --with github.com/WingLim/caddy-webhook=./
