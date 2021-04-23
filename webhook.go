@@ -109,7 +109,7 @@ func (w *WebHook) Validate() error {
 	if w.Path == "" {
 		return fmt.Errorf("cannot create repository in empty path")
 	}
-	if !isEmptyOrGit(w.Path) {
+	if !isEmptyOrGit(w.Path, w.log) {
 		return fmt.Errorf("given path is neither empty nor git repository")
 	}
 
@@ -206,7 +206,11 @@ func isEmptyOrGit(path string) bool {
 		if err != nil {
 			return false
 		}
-		defer f.Close()
+		defer func(f *os.File) {
+			if err := f.Close(); err != nil {
+				log.Error(err.Error())
+			}
+		}(f)
 
 		_, err = f.Readdirnames(1)
 		if err == io.EOF {
