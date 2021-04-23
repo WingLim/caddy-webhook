@@ -15,6 +15,7 @@ const (
 	DefaultBranch = "main"
 )
 
+// Repo tells information about the git repository.
 type Repo struct {
 	URL       string
 	Path      string
@@ -27,6 +28,7 @@ type Repo struct {
 	refName plumbing.ReferenceName
 }
 
+// NewRepo creates a new repo with options.
 func NewRepo(w *WebHook) *Repo {
 	r := &Repo{
 		URL:       w.Repository,
@@ -40,6 +42,7 @@ func NewRepo(w *WebHook) *Repo {
 	return r
 }
 
+// Setup initializes the git repository by either cloning or opening it.
 func (r *Repo) Setup(ctx context.Context, log *zap.Logger) error {
 	var err error
 	log.Info("setting up repository", zap.String("path", r.Path))
@@ -68,7 +71,6 @@ func (r *Repo) Setup(ctx context.Context, log *zap.Logger) error {
 		if err != nil {
 			return err
 		}
-
 	} else if err == git.ErrRepositoryNotExists {
 		var submodule git.SubmoduleRescursivity
 		if r.Submodule {
@@ -94,6 +96,7 @@ func (r *Repo) Setup(ctx context.Context, log *zap.Logger) error {
 	return nil
 }
 
+// Update pulls updates from the remote repository into current worktree.
 func (r *Repo) Update(ctx context.Context) error {
 	if r.refName.IsBranch() {
 		return r.pull(ctx)

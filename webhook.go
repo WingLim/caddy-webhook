@@ -18,6 +18,7 @@ import (
 	"strings"
 )
 
+// Interface guards.
 var (
 	_ caddy.Module                = (*WebHook)(nil)
 	_ caddy.Provisioner           = (*WebHook)(nil)
@@ -30,6 +31,7 @@ func init() {
 	httpcaddyfile.RegisterHandlerDirective("webhook", parseHandlerCaddyfile)
 }
 
+// WebHook is the module configuration.
 type WebHook struct {
 	Repository string `json:"repo,omitempty"`
 	Path       string `json:"path,omitempty"`
@@ -47,6 +49,7 @@ type WebHook struct {
 	setup bool
 }
 
+// CaddyModule returns the Caddy module information.
 func (*WebHook) CaddyModule() caddy.ModuleInfo {
 	return caddy.ModuleInfo{
 		ID: "http.handlers.webhook",
@@ -56,11 +59,16 @@ func (*WebHook) CaddyModule() caddy.ModuleInfo {
 	}
 }
 
+// Provision set's up webhook configuration.
 func (w *WebHook) Provision(ctx caddy.Context) error {
 	w.log = ctx.Logger(w)
 	w.ctx = ctx.Context
 	var err error
+
 	if w.Path == "" {
+		// If the path is empty for a repo, try to get the repo name from
+		// the Repository. If successful set it to "./<repo-name>" else
+		// set it to current working directory, i.e., "."
 		name, err := getRepoNameFromURL(w.Repository)
 		if err != nil {
 			w.Path = "."
@@ -68,6 +76,8 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 			w.Path = name
 		}
 	}
+
+	// Get the absolute path for logging
 	w.Path, err = filepath.Abs(w.Path)
 	if err != nil {
 		return err
@@ -75,6 +85,7 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 
 	w.setHookType()
 
+	// Convert depth from string to int
 	var depth int
 	if w.Depth != "" {
 		depth, err = strconv.Atoi(w.Depth)
@@ -91,6 +102,7 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 	return nil
 }
 
+// Validate ensures webhook's configuration is valid.
 func (w *WebHook) Validate() error {
 	if w.Repository == "" {
 		return fmt.Errorf("cannot create repository with empty URL")
@@ -127,6 +139,7 @@ func (w *WebHook) Validate() error {
 	return nil
 }
 
+// ServeHTTP implements caddyhttp.MiddlewareHandler.
 func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyhttp.Handler) error {
 	if !w.setup {
 		return caddyhttp.Error(
@@ -167,6 +180,7 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 	return next.ServeHTTP(rw, r)
 }
 
+// setHookType set the type which hook service we will use.
 func (w *WebHook) setHookType() {
 	switch w.Type {
 	default:
@@ -174,6 +188,8 @@ func (w *WebHook) setHookType() {
 	}
 }
 
+// ValidateRequest validates webhook request, the webhook request
+// should be POST.
 func ValidateRequest(r *http.Request) error {
 	if r.Method != http.MethodPost {
 		return fmt.Errorf("only %s method accepted; got %s", http.MethodPost, r.Method)
@@ -182,6 +198,7 @@ func ValidateRequest(r *http.Request) error {
 	return nil
 }
 
+// getRepoNameFromURL extracts the repo name from the HTTP URL of the repo.
 func getRepoNameFromURL(u string) (string, error) {
 	netUrl, err := url.ParseRequestURI(u)
 	if err != nil {
@@ -193,7 +210,9 @@ func getRepoNameFromURL(u string) (string, error) {
 	return strings.TrimSuffix(name, ".git"), nil
 }
 
-func isEmptyOrGit(path string) bool {
+// isEmptyOrGit will check the path. If the path is neither empty nor a git
+// directory, return error.
+func isEmptyOrGit(path string, log *zap.Logger) bool {
 	info, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
