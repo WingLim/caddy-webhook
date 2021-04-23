@@ -136,6 +136,10 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 		)
 	}
 
+	if err := ValidateRequest(r); err != nil {
+		return err
+	}
+
 	code, err := w.Hook.Handle(r, w.repo)
 	if err != nil {
 		rw.WriteHeader(code)

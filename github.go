@@ -26,10 +26,6 @@ type ghRelease struct {
 }
 
 func (g Github) Handle(r *http.Request, repo *Repo) (int, error) {
-	if err := ValidateRequest(r); err != nil {
-		return http.StatusBadRequest, err
-	}
-
 	body, err := ioutil.ReadAll(r.Body)
 	err = g.handleSignature(r, body, repo.Secret)
 	if err != nil {
