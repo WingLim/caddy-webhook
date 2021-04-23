@@ -49,11 +49,6 @@ type WebHook struct {
 	setup bool
 }
 
-type HookConf struct {
-	Secret   string
-	RepoInfo *Repo
-}
-
 func (*WebHook) CaddyModule() caddy.ModuleInfo {
 	return caddy.ModuleInfo{
 		ID: "http.handlers.webhook",
