@@ -73,11 +73,12 @@ func (r *Repo) Setup(ctx context.Context, log *zap.Logger) error {
 
 	} else if err == git.ErrRepositoryNotExists {
 		r.repo, err = git.PlainCloneContext(ctx, r.Path, false, &git.CloneOptions{
-			URL:           r.URL,
-			RemoteName:    DefaultRemote,
-			ReferenceName: r.refName,
-			Depth:         r.Depth,
-			Tags:          git.AllTags,
+			URL:               r.URL,
+			RemoteName:        DefaultRemote,
+			ReferenceName:     r.refName,
+			Depth:             r.Depth,
+			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+			Tags:              git.AllTags,
 		})
 		if err != nil {
 			return err
