@@ -23,9 +23,11 @@ func (c *Cmd) Run(logger *zap.Logger) {
 
 	cmd := exec.Command(c.Command, c.Args...)
 	cmd.Dir = c.Path
-	if err := cmd.Start(); err != nil {
+	err := cmd.Start()
+	if err != nil {
 		log.Error(err.Error())
+	} else {
+		log.Info("run command successful")
 	}
-	log.Info("run command successful")
 	return
 }
