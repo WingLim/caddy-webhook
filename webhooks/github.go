@@ -75,7 +75,7 @@ func (g Github) handleSignature(r *http.Request, body []byte, secret string) err
 	return nil
 }
 
-func (g Github) handlePush(body []byte, repo *HookConf) error {
+func (g Github) handlePush(body []byte, hc *HookConf) error {
 	var push ghPush
 
 	err := json.Unmarshal(body, &push)
@@ -85,14 +85,16 @@ func (g Github) handlePush(body []byte, repo *HookConf) error {
 
 	refName := plumbing.ReferenceName(push.Ref)
 	if refName.IsBranch() {
-		if refName != repo.RefName {
+		if refName != hc.RefName {
 			return fmt.Errorf("event: push to branch %s", refName)
 		}
+	} else {
+		return fmt.Errorf("refName is not a branch: %s", refName)
 	}
 	return nil
 }
 
-func (g Github) handleRelease(body []byte, repo *HookConf) error {
+func (g Github) handleRelease(body []byte, hc *HookConf) error {
 	var release ghRelease
 
 	err := json.Unmarshal(body, &release)

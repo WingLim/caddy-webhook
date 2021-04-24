@@ -60,7 +60,7 @@ func (g Gitee) handleToken(r *http.Request, secret string) error {
 	return nil
 }
 
-func (g Gitee) handlePush(body []byte, repo *HookConf) error {
+func (g Gitee) handlePush(body []byte, hc *HookConf) error {
 	var push giteePush
 
 	err := json.Unmarshal(body, &push)
@@ -70,9 +70,11 @@ func (g Gitee) handlePush(body []byte, repo *HookConf) error {
 
 	refName := plumbing.ReferenceName(push.Ref)
 	if refName.IsBranch() {
-		if refName != repo.RefName {
+		if refName != hc.RefName {
 			return fmt.Errorf("event: push to branch %s", refName)
 		}
+	} else {
+		return fmt.Errorf("refName is not a branch: %s", refName)
 	}
 	return nil
 }
