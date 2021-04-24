@@ -6,10 +6,21 @@
 Caddy v2 module for serving a webhook.
 
 ## Installation
+
+### Build with xcaddy
+
 ```shell
 xcaddy build \
   --with github.com/WingLim/caddy-webhook
 ```
+
+### Run in docker
+
+See [caddy-docker](https://github.com/WingLim/caddy-docker) for `Dockerfile`.
+
+DockerHub: [winglim/caddy](https://hub.docker.com/repository/docker/winglim/caddy)
+
+GitHub Package: [winglim/caddy](http://ghcr.io/winglim/caddy)
 
 ## Usage
 Now supported webhook type:
@@ -74,4 +85,4 @@ With the config above, webhook module will do things:
 2. Run the command `hugo --destination ../www` inside the `blog` directory.
 
 3. Listen and serve at `/webhook` and handle the webhook request.
-    1. When receive correct webhook request, will do step 2 again.
+    1. When receive correct webhook request, will update repo and do `step 2` again.
