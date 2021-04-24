@@ -75,6 +75,11 @@ func (r *Repo) Setup(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+
+		err = r.checkout(r.refName)
+		if err != nil {
+			return err
+		}
 	} else if err == git.ErrRepositoryNotExists {
 		// If the path directory is not a git repository, clone it from url.
 		r.repo, err = git.PlainCloneContext(ctx, r.Path, false, &git.CloneOptions{
@@ -139,6 +144,19 @@ func (r *Repo) pull(ctx context.Context) error {
 	}); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *Repo) checkout(ref plumbing.ReferenceName) error {
+	worktree, err := r.repo.Worktree()
+	if err != nil {
+		return err
+	}
+
+	if err := worktree.Checkout(&git.CheckoutOptions{Branch: ref}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
