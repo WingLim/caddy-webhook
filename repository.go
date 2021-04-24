@@ -101,12 +101,18 @@ func (r *Repo) Setup(ctx context.Context) error {
 
 // Update pulls updates from the remote repository into current worktree.
 func (r *Repo) Update(ctx context.Context) error {
+	var err error
 	if r.refName.IsBranch() {
-		return r.pull(ctx)
+		err = r.pull(ctx)
 	}
 
-	go r.cmd.Run(r.log)
-	return git.NoErrAlreadyUpToDate
+	if r.cmd != nil {
+		go r.cmd.Run(r.log)
+	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *Repo) fetch(ctx context.Context) error {

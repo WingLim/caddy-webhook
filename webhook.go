@@ -180,11 +180,15 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 		webhook.log.Info("updating repository", zap.String("path", webhook.Path))
 
 		if err := webhook.repo.Update(webhook.ctx); err != nil {
-			webhook.log.Error(
-				"cannot update repository",
-				zap.Error(err),
-				zap.String("path", webhook.Path),
-			)
+			if err == git.NoErrAlreadyUpToDate {
+				webhook.log.Info("alread up-to-date", zap.String("path", webhook.Path))
+			} else {
+				webhook.log.Error(
+					"cannot update repository",
+					zap.Error(err),
+					zap.String("path", webhook.Path),
+				)
+			}
 			return
 		}
 	}(w)
