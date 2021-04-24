@@ -193,7 +193,7 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 		}
 	}(w)
 
-	return next.ServeHTTP(rw, r)
+	return nil
 }
 
 // setHookType set the type which hook service we will use.
