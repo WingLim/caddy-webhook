@@ -105,6 +105,12 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 	}
 
 	w.repo = NewRepo(w)
+
+	if w.Submodule {
+		w.repo.Submodule = git.DefaultSubmoduleRecursionDepth
+	} else {
+		w.repo.Submodule = git.NoRecurseSubmodules
+	}
 	return nil
 }
 

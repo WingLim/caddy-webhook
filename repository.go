@@ -22,7 +22,7 @@ type Repo struct {
 	Branch    string
 	Depth     int
 	Secret    string
-	Submodule bool
+	Submodule git.SubmoduleRescursivity
 
 	repo    *git.Repository
 	log     *zap.Logger
@@ -33,14 +33,13 @@ type Repo struct {
 // NewRepo creates a new repo with options.
 func NewRepo(w *WebHook) *Repo {
 	r := &Repo{
-		URL:       w.Repository,
-		Path:      w.Path,
-		Branch:    w.Branch,
-		Depth:     w.depth,
-		Secret:    w.Secret,
-		Submodule: w.Submodule,
-		cmd:       w.cmd,
-		log:       w.log,
+		URL:    w.Repository,
+		Path:   w.Path,
+		Branch: w.Branch,
+		Depth:  w.depth,
+		Secret: w.Secret,
+		cmd:    w.cmd,
+		log:    w.log,
 	}
 
 	return r
@@ -58,6 +57,7 @@ func (r *Repo) Setup(ctx context.Context) error {
 
 	r.repo, err = git.PlainOpen(r.Path)
 	if err == nil {
+		// If the path directory is a git repository, set up the remote as 'origin'
 		err = r.repo.DeleteRemote(DefaultRemote)
 		if err != nil && err != git.ErrRemoteNotFound {
 			return err
@@ -76,18 +76,13 @@ func (r *Repo) Setup(ctx context.Context) error {
 			return err
 		}
 	} else if err == git.ErrRepositoryNotExists {
-		var submodule git.SubmoduleRescursivity
-		if r.Submodule {
-			submodule = git.DefaultSubmoduleRecursionDepth
-		} else {
-			submodule = git.NoRecurseSubmodules
-		}
+		// If the path directory is not a git repository, clone it from url.
 		r.repo, err = git.PlainCloneContext(ctx, r.Path, false, &git.CloneOptions{
 			URL:               r.URL,
 			RemoteName:        DefaultRemote,
 			ReferenceName:     r.refName,
 			Depth:             r.Depth,
-			RecurseSubmodules: submodule,
+			RecurseSubmodules: r.Submodule,
 			Tags:              git.AllTags,
 		})
 		if err != nil {
