@@ -39,7 +39,7 @@ func (g Gitee) Handle(r *http.Request, hc *HookConf) (int, error) {
 			return http.StatusBadRequest, err
 		}
 	default:
-		return http.StatusBadRequest, nil
+		return http.StatusBadRequest, fmt.Errorf("cannot handle %q event", event)
 	}
 
 	return http.StatusOK, nil
