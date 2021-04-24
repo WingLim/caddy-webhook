@@ -11,17 +11,22 @@ xcaddy build \
 ```
 
 ## Usage
+Now supported webhook type:
+- github
+- gitlab
+- gitee
+- bitbucket
 
-### Caddyfile
+### Caddyfile Format
 
 ```
 webhook [<url> <path>] {
-    repo	<text>
-    path 	<text>
-    branch 	<text>
-    depth	<int>
-    type 	<text>
-    secret	<text>
+    repo    <text>
+    path    <text>
+    branch  <text>
+    depth   <int>
+    type    <text>
+    secret  <text>
     command <text>...
     submodule
 }
@@ -39,6 +44,9 @@ webhook [<url> <path>] {
 #### Example
 
 The full example to run a hugo blog:
+
+`Caddyfile`:
+
 ```
 example.com
 

@@ -195,6 +195,12 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 // setHookType set the type which hook service we will use.
 func (w *WebHook) setHookType() {
 	switch w.Type {
+	case "gitee":
+		w.hook = webhooks.Gitee{}
+	case "gitlab":
+		w.hook = webhooks.Gitlab{}
+	case "bitbucket":
+		w.hook = webhooks.Bitbucket{}
 	default:
 		w.hook = webhooks.Github{}
 	}
