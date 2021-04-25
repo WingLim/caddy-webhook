@@ -33,7 +33,7 @@ func (g Gitee) Handle(r *http.Request, hc *HookConf) (int, error) {
 	}
 
 	switch event {
-	case "Push hook":
+	case "Push Hook":
 		err = g.handlePush(body, hc)
 		if err != nil {
 			return http.StatusBadRequest, err
