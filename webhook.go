@@ -205,6 +205,8 @@ func (w *WebHook) setHookType() {
 		w.hook = webhooks.Gitlab{}
 	case "bitbucket":
 		w.hook = webhooks.Bitbucket{}
+	case "gogs":
+		w.hook = webhooks.Gogs{}
 	default:
 		w.hook = webhooks.Github{}
 	}
