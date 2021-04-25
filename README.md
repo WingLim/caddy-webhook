@@ -86,3 +86,9 @@ With the config above, webhook module will do things:
 
 3. Listen and serve at `/webhook` and handle the webhook request.
     1. When receive correct webhook request, will update repo and do `step 2` again.
+
+## Thanks to
+
+- [caddygit](https://github.com/vrongmeal/caddygit) - Git module for Caddy v2
+- [caddy-git](https://github.com/abiosoft/caddy-git) - git middleware for Caddy
+- [caddy-exec](https://github.com/abiosoft/caddy-exec) - Caddy v2 module for running one-off commands
