@@ -24,10 +24,12 @@ GitHub Package: [winglim/caddy](http://ghcr.io/winglim/caddy)
 
 ## Usage
 Now supported webhook type:
+
 - github
 - gitlab
 - gitee
 - bitbucket
+- gogs
 
 ### Caddyfile Format
 
