@@ -3,7 +3,6 @@ package webhooks
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-git/go-git/v5/plumbing"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -19,6 +18,7 @@ type bbPush struct {
 	Push struct {
 		Changes []struct {
 			New struct {
+				Type string `json:"type,omitempty"`
 				Name string `json:"name,omitempty"`
 			} `json:"new,omitempty"`
 		} `json:"changes,omitempty"`
@@ -69,9 +69,14 @@ func (b Bitbucket) handlePush(body []byte, hc *HookConf) error {
 		return fmt.Errorf("the push didn't contain a valid branch name")
 	}
 
-	refName := plumbing.ReferenceName(change.New.Name)
-	if refName.IsBranch() {
-		if refName != hc.RefName {
+	refType := change.New.Type
+	if refType == "" {
+		return fmt.Errorf("the push didn't cotain type")
+	}
+
+	refName := change.New.Name
+	if refType == "branch" {
+		if refName != hc.RefName.Short() {
 			return fmt.Errorf("event: push to branch %s", refName)
 		}
 	} else {
