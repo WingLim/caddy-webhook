@@ -34,6 +34,9 @@ func (g Gitlab) Handle(r *http.Request, hc *HookConf) (int, error) {
 	switch event {
 	case "Push Hook":
 		err = g.handlePush(body, hc)
+		if err != nil {
+			return http.StatusBadRequest, err
+		}
 	default:
 		return http.StatusBadRequest, fmt.Errorf("cannot handle %q event", event)
 	}
