@@ -9,11 +9,11 @@ import (
 	"testing"
 )
 
-func TestGithubHandle(t *testing.T) {
+func TestGiteeHandle(t *testing.T) {
 	hc := &HookConf{
 		RefName: plumbing.ReferenceName("refs/heads/main"),
 	}
-	ghHook := Github{}
+	glHook := Gitee{}
 
 	for i, test := range []struct {
 		body  string
@@ -21,18 +21,18 @@ func TestGithubHandle(t *testing.T) {
 		code  int
 	}{
 		{"", "", http.StatusBadRequest},
-		{"", "push", http.StatusBadRequest},
-		{`{"ref": "refs/heads/main"}`, "push", http.StatusOK},
-		{`{"ref": "refs/heads/others}"`, "push", http.StatusBadRequest},
+		{"", "Push Hook", http.StatusBadRequest},
+		{`{"ref": "refs/heads/main"}`, "Push Hook", http.StatusOK},
+		{`{"ref": "refs/heads/others}"`, "Push Hook", http.StatusBadRequest},
 	} {
-		req, err := http.NewRequest("POST", "/webhook", bytes.NewBuffer([]byte(test.body)))
+		req, err := http.NewRequest("POST", "", bytes.NewBuffer([]byte(test.body)))
 		assert.Nil(t, err, fmt.Sprintf("case %d", i))
 
 		if test.event != "" {
-			req.Header.Add("X-Github-Event", test.event)
+			req.Header.Add("X-Gitee-Event", test.event)
 		}
 
-		code, _ := ghHook.Handle(req, hc)
+		code, _ := glHook.Handle(req, hc)
 
 		assert.Equal(t, code, test.code, fmt.Sprintf("case %d", i))
 	}
