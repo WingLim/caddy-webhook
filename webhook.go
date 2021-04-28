@@ -181,7 +181,7 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 
 		if err := webhook.repo.Update(webhook.ctx); err != nil {
 			if err == git.NoErrAlreadyUpToDate {
-				webhook.log.Info("alread up-to-date", zap.String("path", webhook.Path))
+				webhook.log.Info("already up-to-date", zap.String("path", webhook.Path))
 			} else {
 				webhook.log.Error(
 					"cannot update repository",
