@@ -6,6 +6,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"go.uber.org/zap"
 )
@@ -23,6 +24,7 @@ type Repo struct {
 	Depth     int
 	Secret    string
 	Submodule git.SubmoduleRescursivity
+	Auth      transport.AuthMethod
 
 	repo    *git.Repository
 	log     *zap.Logger
@@ -38,6 +40,7 @@ func NewRepo(w *WebHook) *Repo {
 		Branch: w.Branch,
 		Depth:  w.depth,
 		Secret: w.Secret,
+		Auth:   w.auth,
 		cmd:    w.cmd,
 		log:    w.log,
 	}
@@ -84,6 +87,7 @@ func (r *Repo) Setup(ctx context.Context) error {
 		// If the path directory is not a git repository, clone it from url.
 		r.repo, err = git.PlainCloneContext(ctx, r.Path, false, &git.CloneOptions{
 			URL:               r.URL,
+			Auth:              r.Auth,
 			RemoteName:        DefaultRemote,
 			ReferenceName:     r.refName,
 			Depth:             r.Depth,
@@ -124,6 +128,7 @@ func (r *Repo) fetch(ctx context.Context) error {
 	if err := r.repo.FetchContext(ctx, &git.FetchOptions{
 		RemoteName: DefaultRemote,
 		Depth:      r.Depth,
+		Auth:       r.Auth,
 		Tags:       git.AllTags,
 	}); err != nil && err != git.NoErrAlreadyUpToDate {
 		return err
@@ -141,6 +146,7 @@ func (r *Repo) pull(ctx context.Context) error {
 		RemoteName:    DefaultRemote,
 		ReferenceName: r.refName,
 		Depth:         r.Depth,
+		Auth:          r.Auth,
 	}); err != nil {
 		return err
 	}
@@ -169,12 +175,15 @@ func (r *Repo) setRef(ctx context.Context) error {
 	if err := remote.FetchContext(ctx, &git.FetchOptions{
 		RemoteName: DefaultRemote,
 		Depth:      r.Depth,
+		Auth:       r.Auth,
 		Tags:       git.AllTags,
 	}); err != nil && err != git.NoErrAlreadyUpToDate {
 		return err
 	}
 
-	refs, err := remote.List(&git.ListOptions{})
+	refs, err := remote.List(&git.ListOptions{
+		Auth: r.Auth,
+	})
 	if err != nil {
 		return err
 	}

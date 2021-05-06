@@ -73,6 +73,15 @@ func (w *WebHook) UnmarshlCaddyfile(d *caddyfile.Dispenser) error {
 			w.Submodule = true
 		case "command":
 			w.Command = d.RemainingArgs()
+		case "key":
+			if !d.Args(&w.Key) {
+				return d.ArgErr()
+			}
+		case "key_password":
+			if !d.Args(&w.KeyPassword) {
+				return d.ArgErr()
+			}
+
 		}
 	}
 

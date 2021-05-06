@@ -8,6 +8,8 @@ import (
 	"github.com/caddyserver/caddy/v2/caddyconfig/httpcaddyfile"
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"go.uber.org/zap"
 	"io"
 	"net/http"
@@ -33,16 +35,19 @@ func init() {
 
 // WebHook is the module configuration.
 type WebHook struct {
-	Repository string   `json:"repo,omitempty"`
-	Path       string   `json:"path,omitempty"`
-	Branch     string   `json:"branch,omitempty"`
-	Type       string   `json:"type,omitempty"`
-	Secret     string   `json:"secret,omitempty"`
-	Depth      string   `json:"depth,omitempty"`
-	Submodule  bool     `json:"submodule,omitempty"`
-	Command    []string `json:"command,omitempty"`
+	Repository  string   `json:"repo,omitempty"`
+	Path        string   `json:"path,omitempty"`
+	Branch      string   `json:"branch,omitempty"`
+	Type        string   `json:"type,omitempty"`
+	Secret      string   `json:"secret,omitempty"`
+	Depth       string   `json:"depth,omitempty"`
+	Submodule   bool     `json:"submodule,omitempty"`
+	Command     []string `json:"command,omitempty"`
+	Key         string   `json:"key,omitempty"`
+	KeyPassword string   `json:"key_password,omitempty"`
 
 	hook  webhooks.HookService
+	auth  transport.AuthMethod
 	cmd   *Cmd
 	depth int
 	repo  *Repo
@@ -104,6 +109,14 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 		w.cmd.AddCommand(w.Command, w.Path)
 	}
 
+	if w.Key != "" {
+		publicKeys, err := ssh.NewPublicKeysFromFile("git", w.Key, w.KeyPassword)
+		if err != nil {
+			return err
+		}
+		w.auth = publicKeys
+	}
+
 	w.repo = NewRepo(w)
 
 	if w.Submodule {
@@ -120,19 +133,14 @@ func (w *WebHook) Validate() error {
 		return fmt.Errorf("cannot create repository with empty URL")
 	}
 
-	u, err := url.Parse(w.Repository)
-	if err != nil {
-		return fmt.Errorf("invalid url: %v", err)
-	}
-	switch u.Scheme {
-	case "http", "https":
-	default:
-		return fmt.Errorf("url scheme '%s' not supported", u.Scheme)
-	}
-
 	if w.Path == "" {
 		return fmt.Errorf("cannot create repository in empty path")
 	}
+
+	if w.Key != "" && w.auth == nil {
+		return fmt.Errorf("faild to get ssh public key")
+	}
+
 	if !isEmptyOrGit(w.Path, w.log) {
 		return fmt.Errorf("given path is neither empty nor git repository")
 	}
