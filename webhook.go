@@ -9,6 +9,7 @@ import (
 	"github.com/caddyserver/caddy/v2/modules/caddyhttp"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"go.uber.org/zap"
 	"io"
@@ -45,6 +46,9 @@ type WebHook struct {
 	Command     []string `json:"command,omitempty"`
 	Key         string   `json:"key,omitempty"`
 	KeyPassword string   `json:"key_password,omitempty"`
+	Username    string   `json:"username,omitempty"`
+	Password    string   `json:"password,omitempty"`
+	Token       string   `json:"token,omitempty"`
 
 	hook  webhooks.HookService
 	auth  transport.AuthMethod
@@ -109,6 +113,20 @@ func (w *WebHook) Provision(ctx caddy.Context) error {
 		w.cmd.AddCommand(w.Command, w.Path)
 	}
 
+	if w.Username != "" && w.Password != "" {
+		w.auth = &githttp.BasicAuth{
+			Username: w.Username,
+			Password: w.Password,
+		}
+	}
+
+	if w.Token != "" {
+		w.auth = &githttp.BasicAuth{
+			Username: "git", // This can be anything.
+			Password: w.Token,
+		}
+	}
+
 	if w.Key != "" {
 		publicKeys, err := ssh.NewPublicKeysFromFile("git", w.Key, w.KeyPassword)
 		if err != nil {
@@ -137,8 +155,16 @@ func (w *WebHook) Validate() error {
 		return fmt.Errorf("cannot create repository in empty path")
 	}
 
-	if w.Key != "" && w.auth == nil {
-		return fmt.Errorf("faild to get ssh public key")
+	if w.Key != "" && w.auth.Name() != ssh.PublicKeysName {
+		return fmt.Errorf("wrong auth method with public key")
+	}
+
+	if w.Username != "" && w.Password != "" && w.auth.Name() != "http-basic-auth" {
+		return fmt.Errorf("wrong auth method with username and password")
+	}
+
+	if w.Token != "" && w.auth.Name() != "http-basic-auth" {
+		return fmt.Errorf("wrong auth method with token")
 	}
 
 	if !isEmptyOrGit(w.Path, w.log) {

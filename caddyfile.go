@@ -81,7 +81,18 @@ func (w *WebHook) UnmarshlCaddyfile(d *caddyfile.Dispenser) error {
 			if !d.Args(&w.KeyPassword) {
 				return d.ArgErr()
 			}
-
+		case "username":
+			if !d.Args(&w.Username) {
+				return d.ArgErr()
+			}
+		case "password":
+			if !d.Args(&w.Password) {
+				return d.ArgErr()
+			}
+		case "token":
+			if !d.Args(&w.Token) {
+				return d.ArgErr()
+			}
 		}
 	}
 
