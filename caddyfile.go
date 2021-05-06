@@ -25,7 +25,11 @@ func parseHandlerCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler,
 //			depth		<int>
 //			type 		<text>
 //			secret		<text>
-//			command		<test>...
+//			command		<text>...
+//			key			<text>
+//			username	<text>
+//			password	<text>
+//			token		<text>
 //			submodule
 //		}
 func (w *WebHook) UnmarshlCaddyfile(d *caddyfile.Dispenser) error {

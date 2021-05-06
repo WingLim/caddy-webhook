@@ -39,13 +39,17 @@ So, the rest handler after `webhook` will not work.
 
 ```
 webhook [<url> <path>] {
-    repo    <text>
-    path    <text>
-    branch  <text>
-    depth   <int>
-    type    <text>
-    secret  <text>
-    command <text>...
+    repo       <text>
+    path       <text>
+    branch     <text>
+    depth      <int>
+    type       <text>
+    secret     <text>
+    command    <text>...
+    key	       <text>
+    username   <text>
+    password   <text>
+    token      <text>
     submodule
 }
 ```
@@ -56,8 +60,12 @@ webhook [<url> <path>] {
 - **depth** - depth for pull. Default is `0`.
 - **type** - webhook type. Default is `github`.
 - **secret** - secret to verify webhook request.
-- **submodule** - enable recurse submodules
-- **command** - the command run when repo initializes or get the correct webhook request
+- **submodule** - enable recurse submodules.
+- **command** - the command run when repo initializes or get the correct webhook request.
+- **key** - path of private key, using to access git with ssh.
+- **username** - username for http auth.
+- **password** - password for http auth.
+- **token** - GitHub personal access token.
 
 ### Example
 
