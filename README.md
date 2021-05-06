@@ -38,7 +38,7 @@ After receive request and handle it, we return nil instead of the next middlewar
 So, the rest handler after `webhook` will not work.
 
 ```
-webhook [<url> <path>] {
+webhook [<repo> <path>] {
     repo       <text>
     path       <text>
     branch     <text>
