@@ -258,13 +258,27 @@ func ValidateRequest(r *http.Request) error {
 
 // getRepoNameFromURL extracts the repo name from the HTTP URL of the repo.
 func getRepoNameFromURL(u string) (string, error) {
-	netUrl, err := url.ParseRequestURI(u)
-	if err != nil {
-		return "", err
+	var name string
+	if strings.HasPrefix(u, "http") {
+		// Get repo name from http or https link.
+		// https://github.com/WingLim/caddy-webhook.git
+
+		netUrl, err := url.ParseRequestURI(u)
+		if err != nil {
+			return "", err
+		}
+
+		pathSegments := strings.Split(netUrl.Path, "/")
+		name = pathSegments[len(pathSegments)-1]
+	} else if strings.HasPrefix(u, "git") {
+		// Get repo name from ssh link.
+		// git@github.com:WingLim/caddy-webhook.git
+		pathSegments := strings.Split(u, "/")
+		name = pathSegments[len(pathSegments)-1]
+	} else {
+		return "", fmt.Errorf("unsupported protocol")
 	}
 
-	pathSegments := strings.Split(netUrl.Path, "/")
-	name := pathSegments[len(pathSegments)-1]
 	return strings.TrimSuffix(name, ".git"), nil
 }
 
