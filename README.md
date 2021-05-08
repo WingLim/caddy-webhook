@@ -5,6 +5,8 @@
 
 Caddy v2 module for serving a webhook.
 
+English | [中文](https://github.com/WingLim/caddy-webhook/blob/main/README_CN.md)
+
 ## Installation
 
 ### Build with xcaddy
@@ -14,7 +16,7 @@ xcaddy build \
   --with github.com/WingLim/caddy-webhook
 ```
 
-### Run in docker
+### Run in Docker
 
 See [caddy-docker](https://github.com/WingLim/caddy-docker) for `Dockerfile`.
 
@@ -23,6 +25,7 @@ DockerHub: [winglim/caddy](https://hub.docker.com/repository/docker/winglim/cadd
 GitHub Package: [winglim/caddy](http://ghcr.io/winglim/caddy)
 
 ## Usage
+
 Now supported webhook type:
 
 - github
@@ -34,7 +37,7 @@ Now supported webhook type:
 ### Caddyfile Format
 
 Notice: `webhook` block should be the last handler of `route`. 
-After receive request and handle it, we return nil instead of the next middleware.
+After receive request and handle it, we return `nil` instead of the next middleware.
 So, the rest handler after `webhook` will not work.
 
 ```
@@ -54,7 +57,7 @@ webhook [<repo> <path>] {
 }
 ```
 
-- **repo** - git repository url.
+- **repo** - git repository url, supported http, https and ssh.
 - **path** - path to clone and update repository.
 - **branch** - branch to pull. Default is `main`.
 - **depth** - depth for pull. Default is `0`.
