@@ -4,6 +4,8 @@ on:
   push:
     paths-ignore:
       - '**.md'
+    tags-ignore:
+      - 'v*'
 
 jobs:
   Build:
