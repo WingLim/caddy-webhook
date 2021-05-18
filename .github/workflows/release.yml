@@ -3,16 +3,33 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+
     steps:
-      - name: Trigger event on caddy-docker
-        uses: peter-evans/repository-dispatch@v1
+      - name: Checkout code
+        uses: actions/checkout@v2
         with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: WingLim/caddy-docker
-          event-type: release-tagged
+          fetch-depth: 0
+      
+      - name: Export version
+        id: version
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      
+      - name: Install git-chglog
+        uses: craicoverflow/install-git-chglog@v1
+
+      - name: Generate changelog
+        run: git-chglog -o ${{ steps.version.outputs.tag }}.md ${{ steps.version.outputs.tag }}
+
+      - name: Release ${{ steps.version.outputs.tag }}
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          body_path: ${{ steps.version.outputs.tag }}.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
