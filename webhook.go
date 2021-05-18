@@ -30,7 +30,7 @@ var (
 )
 
 func init() {
-	caddy.RegisterModule(&WebHook{})
+	caddy.RegisterModule(new(WebHook))
 	httpcaddyfile.RegisterHandlerDirective("webhook", parseHandlerCaddyfile)
 }
 
