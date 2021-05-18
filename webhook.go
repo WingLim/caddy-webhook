@@ -36,18 +36,47 @@ func init() {
 
 // WebHook is the module configuration.
 type WebHook struct {
+	// Git repository URL, supported http, https and ssh.
 	Repository  string   `json:"repo,omitempty"`
+
+	// Path to clone and update repository.
 	Path        string   `json:"path,omitempty"`
+
+	// Branch to pull.
+	// Default to `main`.
 	Branch      string   `json:"branch,omitempty"`
+
+	// Webhook type.
+	// Default to `github`.
 	Type        string   `json:"type,omitempty"`
+
+	// Secret to verify webhook request.
 	Secret      string   `json:"secret,omitempty"`
+
+	// Depth for pull and fetch.
+	// Default to `0`.
 	Depth       string   `json:"depth,omitempty"`
+
+	// Enable recurse submodules.
 	Submodule   bool     `json:"submodule,omitempty"`
+
+	// Command to run when repo initializes or receive a
+	// correct webhook request.
 	Command     []string `json:"command,omitempty"`
+
+	// Path of private key, using to access git with ssh.
 	Key         string   `json:"key,omitempty"`
+
+	// Password of private key.
 	KeyPassword string   `json:"key_password,omitempty"`
+
+	// Username for http auth.
 	Username    string   `json:"username,omitempty"`
+
+	// Password for http auth.
 	Password    string   `json:"password,omitempty"`
+
+	// GitHub personal access token.
 	Token       string   `json:"token,omitempty"`
 
 	hook  webhooks.HookService
