@@ -6,9 +6,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/go-git/go-git/v5/plumbing"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 type Github struct {

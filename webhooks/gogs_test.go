@@ -3,10 +3,11 @@ package webhooks
 import (
 	"bytes"
 	"fmt"
-	"github.com/alecthomas/assert"
-	"github.com/go-git/go-git/v5/plumbing"
 	"net/http"
 	"testing"
+
+	"github.com/alecthomas/assert"
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 func TestGogsHandle(t *testing.T) {

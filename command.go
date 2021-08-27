@@ -1,8 +1,9 @@
 package caddy_webhook
 
 import (
-	"go.uber.org/zap"
 	"os/exec"
+
+	"go.uber.org/zap"
 )
 
 type Cmd struct {

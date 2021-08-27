@@ -2,10 +2,11 @@ package caddy_webhook
 
 import (
 	"fmt"
-	"github.com/alecthomas/assert"
-	"github.com/go-git/go-git/v5"
 	"os"
 	"testing"
+
+	"github.com/alecthomas/assert"
+	"github.com/go-git/go-git/v5"
 )
 
 func TestGetRepoNameFromURL(t *testing.T) {

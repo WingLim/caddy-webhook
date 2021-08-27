@@ -3,9 +3,10 @@ package webhooks
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-git/go-git/v5/plumbing"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/go-git/go-git/v5/plumbing"
 )
 
 type Gitlab struct {
