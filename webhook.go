@@ -236,7 +236,7 @@ func (w *WebHook) ServeHTTP(rw http.ResponseWriter, r *http.Request, next caddyh
 	code, err := w.hook.Handle(r, hc)
 	if err != nil {
 		rw.WriteHeader(code)
-		w.log.Error(err.Error())
+		w.log.Warn(err.Error())
 		return caddyhttp.Error(code, err)
 	}
 
