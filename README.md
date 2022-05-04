@@ -38,7 +38,7 @@ Now supported webhook type:
 
 Notice: `webhook` block should be the last handler of `route`. 
 After receive request and handle it, we return `nil` instead of the next middleware.
-So, the rest handler after `webhook` will not work.
+So, the next handler after `webhook` will not work.
 
 ```
 webhook [<repo> <path>] {
